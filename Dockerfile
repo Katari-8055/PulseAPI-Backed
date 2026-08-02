@@ -2,8 +2,11 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+RUN apk add --no-cache curl
+
 COPY package*.json ./
-COPY node_modules ./node_modules
+
+RUN npm ci --omit=dev
 
 COPY . .
 
@@ -11,4 +14,4 @@ RUN mkdir -p logs
 
 EXPOSE 5000
 
-CMD [ "node", "src/server.js" ]
+CMD ["npm","start"]
