@@ -1,5 +1,5 @@
 import { APPLICATION_ROLES } from "../../../shared/constant/role.js";
-import config from "../../../shared/config/index.js"
+import config, { getCookieOptions } from "../../../shared/config/index.js"
 import ResponseFormatter from "../../../shared/utils/responseFormatter.js";
 
 /**
@@ -31,13 +31,9 @@ export class AuthController {
 
             const { token, user } = await this.authService.onboardSuperAdmin(superAdminData);
 
-            res.cookie("authToken", token, {
-                httpOnly: config.cookie.httpOnly,
-                secure: config.cookie.secure,
-                maxAge: config.cookie.expiresIn
-            });
+            res.cookie("authToken", token, getCookieOptions());
 
-            res.status(201).json(ResponseFormatter.success(user, "Super admin created successfully", 201))
+            res.status(201).json(ResponseFormatter.success({ user, token }, "Super admin created successfully", 201))
         } catch (error) {
             next(error)
         }
@@ -58,13 +54,9 @@ export class AuthController {
 
             const { token, user } = await this.authService.register(userData);
 
-            res.cookie("authToken", token, {
-                httpOnly: config.cookie.httpOnly,
-                secure: config.cookie.secure,
-                maxAge: config.cookie.expiresIn
-            });
+            res.cookie("authToken", token, getCookieOptions());
 
-            res.status(201).json(ResponseFormatter.success(user, "User created successfully", 201))
+            res.status(201).json(ResponseFormatter.success({ user, token }, "User created successfully", 201))
         } catch (error) {
             next(error)
         }
@@ -81,13 +73,9 @@ export class AuthController {
             const { username, password } = req.body;
             const { user, token } = await this.authService.login(username, password);
 
-            res.cookie("authToken", token, {
-                httpOnly: config.cookie.httpOnly,
-                secure: config.cookie.secure,
-                maxAge: config.cookie.expiresIn
-            });
+            res.cookie("authToken", token, getCookieOptions());
 
-            res.status(200).json(ResponseFormatter.success(user, "User LoggedIn successfully", 200))
+            res.status(200).json(ResponseFormatter.success({ user, token }, "User LoggedIn successfully", 200))
         } catch (error) {
             next(error)
         }
@@ -118,7 +106,7 @@ export class AuthController {
      */
     async logout(req, res, next) {
         try {
-            res.clearCookie("authToken")
+            res.clearCookie("authToken", getCookieOptions())
             res.status(200).json(ResponseFormatter.success({}, "Logout successful", 200))
         } catch (error) {
             next(error)

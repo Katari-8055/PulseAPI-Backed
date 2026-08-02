@@ -24,9 +24,21 @@ const app = express();
  * Middlewares
  */
 app.use(helmet());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : true;
+
 app.use(cors({
-    origin: true,
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins === true || (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin))) {
+            callback(null, true);
+        } else {
+            callback(null, true);
+        }
+    },
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-api-key'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
 }));
 app.use(cookieParser())
 app.use(express.json());

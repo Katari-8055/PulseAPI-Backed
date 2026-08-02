@@ -1,5 +1,5 @@
 import ResponseFormatter from "../../../shared/utils/responseFormatter.js";
-import config from "../../../shared/config/index.js";
+import config, { getCookieOptions } from "../../../shared/config/index.js";
 
 /**
  * ClientController class to handle client related requests
@@ -37,13 +37,9 @@ export class ClientController {
         try {
             const { client, token } = await this.clientService.createClient(req.body);
 
-            res.cookie("authToken", token, {
-                httpOnly: config.cookie.httpOnly,
-                secure: config.cookie.secure,
-                maxAge: config.cookie.expiresIn
-            });
+            res.cookie("authToken", token, getCookieOptions());
 
-            return res.status(201).json(ResponseFormatter.success(client, "Client created successfully", 201))
+            return res.status(201).json(ResponseFormatter.success({ client, token }, "Client created successfully", 201))
         } catch (error) {
             next(error)
         }
@@ -53,13 +49,9 @@ export class ClientController {
         try {
             const { client, token } = await this.clientService.loginClient(req.body);
 
-            res.cookie("authToken", token, {
-                httpOnly: config.cookie.httpOnly,
-                secure: config.cookie.secure,
-                maxAge: config.cookie.expiresIn
-            });
+            res.cookie("authToken", token, getCookieOptions());
 
-            return res.status(200).json(ResponseFormatter.success(client, "Client logged in successfully", 200))
+            return res.status(200).json(ResponseFormatter.success({ client, token }, "Client logged in successfully", 200))
         } catch (error) {
             next(error)
         }

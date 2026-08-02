@@ -47,15 +47,29 @@ const config = {
 
     cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        expiresIn: 24 * 60 * 60 * 1000
+        secure: process.env.COOKIE_SECURE === 'true' || (process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== 'false'),
+        sameSite: process.env.COOKIE_SAME_SITE || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
+        maxAge: 24 * 60 * 60 * 1000,
+        expiresIn: 24 * 60 * 60 * 1000,
+        path: '/'
     },
 
     cookies: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        expiresIn: 24 * 60 * 60 * 1000
+        secure: process.env.COOKIE_SECURE === 'true' || (process.env.NODE_ENV === 'production' && process.env.COOKIE_SECURE !== 'false'),
+        sameSite: process.env.COOKIE_SAME_SITE || (process.env.NODE_ENV === 'production' ? 'none' : 'lax'),
+        maxAge: 24 * 60 * 60 * 1000,
+        expiresIn: 24 * 60 * 60 * 1000,
+        path: '/'
     }
 }
+
+export const getCookieOptions = () => ({
+    httpOnly: config.cookie.httpOnly,
+    secure: config.cookie.secure,
+    sameSite: config.cookie.sameSite,
+    maxAge: config.cookie.maxAge,
+    path: config.cookie.path
+});
 
 export default config;

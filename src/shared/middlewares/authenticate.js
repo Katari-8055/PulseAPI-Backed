@@ -12,6 +12,15 @@ const authenticate = async (req, res, next) => {
             token = req.cookies.authToken;
         }
 
+        if (!token && req.headers.authorization) {
+            const authHeader = req.headers.authorization;
+            if (authHeader.startsWith("Bearer ")) {
+                token = authHeader.split(" ")[1];
+            } else {
+                token = authHeader;
+            }
+        }
+
         if (!token) {
             return res.status(401).json(ResponseFormatter.error("Authentication Token Required", 401));
         }
