@@ -60,6 +60,11 @@ const apiHitSchema = new mongoose.Schema(
             type: String,
             default: '',
         },
+        userId: {
+            type: String,
+            default: null,
+            index: true,
+        },
     },
     {
         timestamps: true,
@@ -70,6 +75,7 @@ const apiHitSchema = new mongoose.Schema(
 // Create compound indexes for common queries
 apiHitSchema.index({ clientId: 1, serviceName: 1, endpoint: 1, timestamp: -1 });
 apiHitSchema.index({ clientId: 1, timestamp: -1, statusCode: 1 });
+apiHitSchema.index({ clientId: 1, timestamp: -1, ip: 1 });
 apiHitSchema.index({ apiKeyId: 1, timestamp: -1 });
 apiHitSchema.index({ timestamp: 1 }, { expireAfterSeconds: 2592000 });
 

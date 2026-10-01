@@ -36,6 +36,7 @@ export class IngestService {
                 apiKeyId: hitData.apiKeyId,
                 ip: hitData.ip || 'unknown',
                 userAgent: hitData.userAgent || '',
+                userId: hitData.userId ? String(hitData.userId) : null,
             }
 
             const published = await this.eventProducer.publishApiHit(event);

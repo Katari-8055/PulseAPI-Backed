@@ -14,9 +14,13 @@ class Container {
         const repositories = {
             clientRepository,
             metricsRepository: processorContainer.repositories.metricsRepository,
+            apiHitRepository: processorContainer.repositories.apiHitRepository,
         };
 
-        const analyticsService = new AnalyticsService(repositories.metricsRepository);
+        const analyticsService = new AnalyticsService(
+            repositories.metricsRepository,
+            repositories.apiHitRepository
+        );
 
         const services = {
             analyticsService,

@@ -4,6 +4,7 @@ import MongoUserRepository from "../../auth/repository/UserRepository.js";
 import { ClientService } from "../service/clientService.js";
 import { ClientController } from "../controller/clientController.js";
 import authContainer from "../../auth/Dependencies/dependencies.js"
+import processorContainer from "../../processor/Dependency/dependencies.js";
 
 /**
  * Container class to initialize and manage dependencies for the client service
@@ -19,7 +20,8 @@ class Container {
         const repositories = {
             clientRepository: MongoClientRepository,
             apiKeyRepository: MongoApiKeyRepository,
-            userRepository: MongoUserRepository
+            userRepository: MongoUserRepository,
+            apiHitRepository: processorContainer.repositories.apiHitRepository,
         };
 
         // Initialize services with the required dependencies
@@ -27,7 +29,8 @@ class Container {
             clientServices: new ClientService({
                 clientRepository: repositories.clientRepository,
                 apiKeyRepository: repositories.apiKeyRepository,
-                userRepository: repositories.userRepository
+                userRepository: repositories.userRepository,
+                apiHitRepository: repositories.apiHitRepository,
             })
         };
 

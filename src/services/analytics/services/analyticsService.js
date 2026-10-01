@@ -3,20 +3,26 @@ import logger from '../../../shared/config/logger.js';
 import AppError from '../../../shared/utils/AppError.js';
 
 export class AnalyticsService {
-    constructor(metricsRepo) {
+    constructor(metricsRepo, apiHitRepo = null) {
         if (!metricsRepo) throw new Error("AnalyticsService requires a metricsRepository")
         this.metricsRepository = metricsRepo;
+        this.apiHitRepository = apiHitRepo;
     }
 
     async getOverallStats(clientId, filters = {}) {
         try {
             const { startTime, endTime } = this.parseTimeFilters(filters);
 
-            const stats = await this.metricsRepository.getOverallStats(
-                clientId,
-                startTime,
-                endTime
-            )
+            const [stats, uniqueUsers] = await Promise.all([
+                this.metricsRepository.getOverallStats(
+                    clientId,
+                    startTime,
+                    endTime
+                ),
+                this.apiHitRepository
+                    ? this.apiHitRepository.countUniqueUsers({ clientId, startTime, endTime })
+                    : Promise.resolve(0)
+            ]);
 
             const totalHits = parseInt(stats.total_hits) || 0;
             const errorHits = parseInt(stats.error_hits) || 0;
@@ -30,6 +36,7 @@ export class AnalyticsService {
                 avgLatency: parseFloat(stats.avg_latency) || 0,
                 uniqueServices: parseInt(stats.unique_services) || 0,
                 uniqueEndpoints: parseInt(stats.unique_endpoints) || 0,
+                uniqueUsers: parseInt(uniqueUsers) || 0,
                 timeRange: {
                     start: startTime,
                     end: endTime,

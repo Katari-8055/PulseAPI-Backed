@@ -28,8 +28,9 @@ export class IngestController {
                 ...req.body,
                 clientId: req.client._id,
                 apiKeyId: req.apiKey._id,
-                ip: req.ip || req.connection.remoteAddress,
-                userAgent: req.headers['user-agent'] || ''
+                ip: req.body.ip || req.ip || req.connection?.remoteAddress || 'unknown',
+                userAgent: req.body.userAgent || req.headers['user-agent'] || '',
+                userId: req.body.userId || null,
             };
 
             const result = await this.ingestService.ingestApiHit(hitData);

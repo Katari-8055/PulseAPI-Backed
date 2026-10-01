@@ -41,6 +41,7 @@ export class ClientService {
         this.clientRepository = dependencies.clientRepository;
         this.apiKeyRepository = dependencies.apiKeyRepository;
         this.userRepository = dependencies.userRepository;
+        this.apiHitRepository = dependencies.apiHitRepository || null;
     };
 
     /**
@@ -370,12 +371,17 @@ export class ClientService {
             if (user.role !== APPLICATION_ROLES.SUPER_ADMIN) {
                 throw new AppError('Access denied', 403);
             };
-            const clients = await this.clientRepository.find({})
+            const clients = await this.clientRepository.find({});
+
+            const uniqueUsersMap = this.apiHitRepository
+                ? await this.apiHitRepository.getUniqueUsersCountByClient(clients.map(c => c._id))
+                : {};
 
             const clientsWithKeysCount = await Promise.all(clients.map(async (client) => {
                 const keys = await this.apiKeyRepository.findByClientId(client._id);
                 const clientObj = client.toObject ? client.toObject() : { ...client };
                 clientObj.keysCount = keys ? keys.length : 0;
+                clientObj.uniqueUsersCount = uniqueUsersMap[client._id.toString()] || 0;
                 return clientObj;
             }));
 

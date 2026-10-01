@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { BaseRepository } from "./BaseRepository.js";
 
 
@@ -46,6 +47,83 @@ export class ApiHitRepository extends BaseRepository {
         } catch (error) {
             this.logger.error('Error counting API hits:', error);
             throw error;
+        }
+    }
+
+    async countUniqueUsers({ clientId, startTime, endTime } = {}) {
+        try {
+            const match = {};
+
+            if (clientId) {
+                match.clientId = mongoose.Types.ObjectId.isValid(clientId)
+                    ? new mongoose.Types.ObjectId(clientId)
+                    : clientId;
+            }
+
+            if (startTime || endTime) {
+                match.timestamp = {};
+                if (startTime) match.timestamp.$gte = new Date(startTime);
+                if (endTime) match.timestamp.$lte = new Date(endTime);
+            }
+
+            const result = await this.model.aggregate([
+                { $match: match },
+                {
+                    $group: {
+                        _id: {
+                            $ifNull: ['$userId', '$ip']
+                        }
+                    }
+                },
+                {
+                    $count: 'uniqueUsers'
+                }
+            ]);
+
+            return result.length > 0 ? result[0].uniqueUsers : 0;
+        } catch (error) {
+            this.logger.error('Error counting unique users:', error);
+            return 0;
+        }
+    }
+
+    async getUniqueUsersCountByClient(clientIds = []) {
+        try {
+            const match = {};
+            if (clientIds && clientIds.length > 0) {
+                match.clientId = {
+                    $in: clientIds.map(id => mongoose.Types.ObjectId.isValid(id) ? new mongoose.Types.ObjectId(id) : id)
+                };
+            }
+
+            const result = await this.model.aggregate([
+                { $match: match },
+                {
+                    $group: {
+                        _id: {
+                            clientId: '$clientId',
+                            user: { $ifNull: ['$userId', '$ip'] }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id.clientId',
+                        uniqueUsers: { $sum: 1 }
+                    }
+                }
+            ]);
+
+            const map = {};
+            result.forEach(r => {
+                if (r._id) {
+                    map[r._id.toString()] = r.uniqueUsers;
+                }
+            });
+            return map;
+        } catch (error) {
+            this.logger.error('Error getting unique users count by client:', error);
+            return {};
         }
     }
 
